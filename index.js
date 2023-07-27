@@ -101,14 +101,16 @@ class Solver {
                         this.true_itter++
                         // проверяем наличие пустых рядов (Где все элементы устранены)
                         this.kill_empty_rows()
+
+                        return true
                     }
                     // завершаем выполнение функции, т.к элементы были устранены
-                    return
+                    return false
                 }
             }
         }
         // завершаем выполнение функции, т.к ничего не было найдено
-        return
+        return false
     }
 
     //
@@ -139,11 +141,13 @@ class Solver {
 
                     this.true_itter++
                     this.kill_empty_rows()
+
+                    return true
                 }
-                return
+                return false
             }
         }
-        return
+        return false
     }
 
     //
@@ -157,10 +161,10 @@ class Solver {
     //
     check_and_find_next_diagonal(row_id, object_id) {
 
-        let obj_right = object_id + 1   // объект стоящий справа от цели
-        let obj_left = object_id - 1    // объект стоящий слева от цели
+        let obj_right = object_id + 1 // объект стоящий справа от цели
+        let obj_left = object_id - 1 // объект стоящий слева от цели
         const seq_fail = [false, false] // состояние логики. если оба false,
-                                        // выполнение метода прерывается
+        // выполнение метода прерывается
 
         // проходит по всем строкам и проверяет наличие подходящего значения
         for (let i = row_id + 1; i < this.field.length; i++) {
@@ -185,7 +189,7 @@ class Solver {
                         this.true_itter++
                         this.kill_empty_rows()
 
-                        return
+                        return true
                     }
                     // записывает данный вариант в проваленные
                     seq_fail[0] = true
@@ -219,7 +223,7 @@ class Solver {
                         this.true_itter++
                         this.kill_empty_rows()
 
-                        return
+                        return true
                     }
                     seq_fail[1] = true
                 } else if (this.field[i][obj_left].killed && obj_left > 0) {
@@ -234,10 +238,10 @@ class Solver {
 
             // проверяет, если все варианты провалились. если да, то завершает выполнение метода
             if (seq_fail.every(r => r == true)) {
-                return
+                return false
             }
         }
-        return
+        return false
     }
 
     //
@@ -253,22 +257,30 @@ class Solver {
 
             // проходит по всем элементам в строке
             for (let x = 0; x < this.field[i].length; x++) {
+                // переменная, добавленная для записи состояния элемента
+                // если в процессе выполнения элемент будет устранен, 
+                // то программа пропустит следующие проверки
+                let is_killed = false
 
                 // проверяет, если элемент еще не устранен
-                if (!this.field[i][x].killed) {
+                if (this.field[i][x].killed) {
+                    is_killed = true
+                }
+
+                if (!is_killed) {
                     // запускает проверку по горизонтали
                     this.check_and_find_next_horizontal(i, x)
+                }
 
-                    // если достаточно места и есть элементы для проверки, запускает проверку
-                    // по вертикали
-                    if (i < this.field.length - 1 && this.field[i + 1][x] != undefined) {
-                        this.check_and_find_next_vertical(i, x)
-                    }
-                    // если достаточно места и есть элементы для проверки, запускает проверку
-                    // по диагонали
-                    if (i < this.field.length - 1) {
-                        this.check_and_find_next_diagonal(i, x)
-                    }
+                // если достаточно места и есть элементы для проверки, запускает проверку
+                // по вертикали
+                if (!is_killed && i < this.field.length - 1 && this.field[i + 1][x] != undefined) {
+                    this.check_and_find_next_vertical(i, x)
+                }
+                // если достаточно места и есть элементы для проверки, запускает проверку
+                // по диагонали
+                if (!is_killed && i < this.field.length - 1) {
+                    this.check_and_find_next_diagonal(i, x)
                 }
             }
         }
